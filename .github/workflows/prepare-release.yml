@@ -1,0 +1,262 @@
+name: Prepare Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (e.g., 1.0.0, 1.2.3-alpha.1)'
+        required: true
+        type: string
+      release_type:
+        description: 'Type of release'
+        required: true
+        default: 'minor'
+        type: choice
+        options:
+        - major
+        - minor
+        - patch
+        - alpha
+        - beta
+        - rc
+      create_tag:
+        description: 'Create and push tag immediately'
+        required: false
+        default: true
+        type: boolean
+
+jobs:
+  validate-inputs:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.validate.outputs.version }}
+      is-prerelease: ${{ steps.validate.outputs.is-prerelease }}
+    steps:
+    - name: Validate version format
+      id: validate
+      run: |
+        VERSION="${{ github.event.inputs.version }}"
+
+        # Remove 'v' prefix if present
+        VERSION=${VERSION#v}
+
+        # Validate version format (semantic versioning)
+        if [[ ! $VERSION =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9]+(\.[0-9]+)?)?$ ]]; then
+          echo "❌ Invalid version format: $VERSION"
+          echo "Please use semantic versioning format (e.g., 1.0.0, 1.2.3-alpha.1)"
+          exit 1
+        fi
+
+        echo "version=${VERSION}" >> $GITHUB_OUTPUT
+
+        # Check if this is a pre-release
+        if [[ $VERSION =~ (alpha|beta|rc|dev) ]]; then
+          echo "is-prerelease=true" >> $GITHUB_OUTPUT
+          echo "📦 Detected pre-release version: $VERSION"
+        else
+          echo "is-prerelease=false" >> $GITHUB_OUTPUT
+          echo "📦 Detected stable release version: $VERSION"
+        fi
+
+  prepare-release:
+    runs-on: ubuntu-latest
+    needs: validate-inputs
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        fetch-depth: 0
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.11"
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install toml
+
+    - name: Update version in pyproject.toml
+      run: |
+        VERSION="${{ needs.validate-inputs.outputs.version }}"
+
+        # Update version in pyproject.toml
+        python -c "
+        import tomllib
+        import re
+
+        # Read current pyproject.toml
+        with open('pyproject.toml', 'r') as f:
+            content = f.read()
+
+        # Update version
+        updated_content = re.sub(
+            r'version = \"[^\"]*\"',
+            f'version = \"$VERSION\"',
+            content
+        )
+
+        # Write back
+        with open('pyproject.toml', 'w') as f:
+            f.write(updated_content)
+
+        print(f'Updated version to $VERSION in pyproject.toml')
+        "
+
+        # Verify the change
+        NEW_VERSION=$(python -c "import tomllib; print(tomllib.load(open('pyproject.toml', 'rb'))['project']['version'])")
+        echo "✅ Version updated to: $NEW_VERSION"
+
+    - name: Update CHANGELOG.md
+      run: |
+        VERSION="${{ needs.validate-inputs.outputs.version }}"
+        DATE=$(date +%Y-%m-%d)
+        IS_PRERELEASE="${{ needs.validate-inputs.outputs.is-prerelease }}"
+
+        # Check if CHANGELOG.md exists
+        if [ ! -f CHANGELOG.md ]; then
+          echo "Creating CHANGELOG.md"
+          cat > CHANGELOG.md << EOF
+        # Changelog
+
+        All notable changes to this project will be documented in this file.
+
+        The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+        and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+        ## [Unreleased]
+
+        ## [$VERSION] - $DATE
+
+        ### Added
+        - Release $VERSION
+
+        EOF
+        else
+          # Add new version entry at the top
+          if [ "$IS_PRERELEASE" = "true" ]; then
+            RELEASE_TYPE="Pre-release"
+          else
+            RELEASE_TYPE="Release"
+          fi
+
+          # Create temporary file with new entry
+          cat > temp_changelog.md << EOF
+        # Changelog
+
+        All notable changes to this project will be documented in this file.
+
+        The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+        and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+        ## [Unreleased]
+
+        ## [$VERSION] - $DATE
+
+        ### Added
+        - $RELEASE_TYPE $VERSION
+
+        EOF
+
+          # Append existing changelog (skip the header)
+          tail -n +8 CHANGELOG.md >> temp_changelog.md
+          mv temp_changelog.md CHANGELOG.md
+        fi
+
+        echo "✅ Updated CHANGELOG.md for version $VERSION"
+
+    - name: Commit changes
+      run: |
+        VERSION="${{ needs.validate-inputs.outputs.version }}"
+
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+
+        git add pyproject.toml CHANGELOG.md
+        git commit -m "chore: prepare release $VERSION
+
+        - Update version to $VERSION in pyproject.toml
+        - Update CHANGELOG.md with release notes
+        "
+
+        echo "✅ Committed version bump and changelog update"
+
+    - name: Create and push tag
+      if: github.event.inputs.create_tag == 'true'
+      run: |
+        VERSION="${{ needs.validate-inputs.outputs.version }}"
+        TAG="v$VERSION"
+
+        # Create annotated tag
+        git tag -a "$TAG" -m "Release $VERSION"
+
+        # Push changes and tag
+        git push origin main
+        git push origin "$TAG"
+
+        echo "✅ Created and pushed tag: $TAG"
+        echo "🚀 Release workflow will be triggered automatically"
+
+    - name: Push changes only
+      if: github.event.inputs.create_tag == 'false'
+      run: |
+        git push origin main
+        echo "✅ Pushed version bump changes"
+        echo "ℹ️  Tag not created. You can create it manually later."
+
+    - name: Create Pull Request (if not main branch)
+      if: github.ref != 'refs/heads/main'
+      uses: peter-evans/create-pull-request@v5
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        commit-message: "chore: prepare release ${{ needs.validate-inputs.outputs.version }}"
+        title: "Release ${{ needs.validate-inputs.outputs.version }}"
+        body: |
+          ## Release ${{ needs.validate-inputs.outputs.version }}
+
+          This PR prepares the release for version ${{ needs.validate-inputs.outputs.version }}.
+
+          ### Changes
+          - ⬆️ Update version to ${{ needs.validate-inputs.outputs.version }} in pyproject.toml
+          - 📝 Update CHANGELOG.md with release notes
+
+          ### Next Steps
+          1. Review and merge this PR
+          2. Create tag `v${{ needs.validate-inputs.outputs.version }}` to trigger release
+
+          ### Release Type
+          ${{ needs.validate-inputs.outputs.is-prerelease == 'true' && '🧪 Pre-release' || '🎉 Stable release' }}
+        branch: release/${{ needs.validate-inputs.outputs.version }}
+        delete-branch: true
+
+    - name: Summary
+      run: |
+        VERSION="${{ needs.validate-inputs.outputs.version }}"
+        IS_PRERELEASE="${{ needs.validate-inputs.outputs.is-prerelease }}"
+        CREATE_TAG="${{ github.event.inputs.create_tag }}"
+
+        echo "## Release Preparation Summary" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "- **Version**: $VERSION" >> $GITHUB_STEP_SUMMARY
+        echo "- **Type**: $([ "$IS_PRERELEASE" = "true" ] && echo "Pre-release" || echo "Stable release")" >> $GITHUB_STEP_SUMMARY
+        echo "- **Tag created**: $([ "$CREATE_TAG" = "true" ] && echo "✅ Yes" || echo "❌ No")" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+
+        if [ "$CREATE_TAG" = "true" ]; then
+          echo "🚀 **Release workflow triggered**: Check the Actions tab for release progress" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "The release will be:" >> $GITHUB_STEP_SUMMARY
+          if [ "$IS_PRERELEASE" = "true" ]; then
+            echo "- Published to **Test PyPI** (pre-release)" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "- Published to **PyPI** (stable release)" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "- Available on **GitHub Releases**" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "ℹ️ **Manual tag creation required**: Run \`git tag v$VERSION && git push origin v$VERSION\` to trigger release" >> $GITHUB_STEP_SUMMARY
+        fi

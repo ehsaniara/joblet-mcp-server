@@ -1,0 +1,89 @@
+# Sample Joblet MCP Server Configuration
+# Place this file at ~/.rnx/rnx-config.yml
+#
+# This configuration format matches what joblet-sdk-python expects
+# and uses embedded TLS certificates as strings (not file paths)
+
+version: "3.0"
+
+nodes:
+  # Default node configuration for admin access
+  default:
+    address: "your-joblet-server.example.com:50051"
+    cert: |
+      -----BEGIN CERTIFICATE-----
+      MIIEUTCCAjkCFEhzcjY/SBRHyd3wCq4PYjNiNfYAMA0GCSqGSIb3DQEBCwUAMGIx
+      CzAJBgNVBAYTAlVTMQswCQYDVQQIDAJDQTEUMBIGA1UEBwwLTG9zIEFuZ2VsZXMx
+      DzANBgNVBAoMBkpvYmxldDELMAkGA1UECwwCQ0ExEjAQBgNVBAMMCUpvYmxldC1D
+      QTAeFw0yNTA4MjgwMTAzMjJaFw0yNjA4MjgwMTAzMjJaMGgxCzAJBgNVBAYTAlVT
+      # Replace with your actual admin client certificate content
+      # ... (certificate content continues) ...
+      -----END CERTIFICATE-----
+    key: |
+      -----BEGIN PRIVATE KEY-----
+      MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCty2xspct1gYk9
+      Obt/oky/sX2iPzFwSDNkdmnOYV6K3Rnwv2kax8RS+3H+s0TlTHLPYaTsl1wxdVgM
+      # Replace with your actual admin private key content
+      # ... (private key content continues) ...
+      -----END PRIVATE KEY-----
+    ca: |
+      -----BEGIN CERTIFICATE-----
+      MIIFpTCCA42gAwIBAgIUI2WnxZcIMNk7eBxeBmOU5dXgk50wDQYJKoZIhvcNAQEL
+      BQAwYjELMAkGA1UEBhMCVVMxCzAJBgNVBAgMAkNBMRQwEgYDVQQHDAtMb3MgQW5n
+      ZWxlczEPMA0GA1UECgwGSm9ibGV0MQswCQYDVQQLDAJDQTESMBAGA1UEAwwJSm9i
+      # Replace with your actual CA certificate content
+      # ... (CA certificate content continues) ...
+      -----END CERTIFICATE-----
+
+  # Viewer node configuration for read-only access
+  viewer:
+    address: "your-joblet-server.example.com:50051"
+    cert: |
+      -----BEGIN CERTIFICATE-----
+      MIIEUzCCAjsCFBl1HT3bpwaCA/7C5vjfvzlWPzmQMA0GCSqGSIb3DQEBCwUAMGIx
+      CzAJBgNVBAYTAlVTMQswCQYDVQQIDAJDQTEUMBIGA1UEBwwLTG9zIEFuZ2VsZXMx
+      # Replace with your actual viewer client certificate content
+      # ... (certificate content continues) ...
+      -----END CERTIFICATE-----
+    key: |
+      -----BEGIN PRIVATE KEY-----
+      MIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQDI1ms1yFpwyDV9
+      zYYLvz0YGFsiCLbFpV26Ls4di5sQs9wyqvRquBhBNZLyLvM2f7TBMguqgXNRdNqP
+      # Replace with your actual viewer private key content
+      # ... (private key content continues) ...
+      -----END PRIVATE KEY-----
+    ca: |
+      -----BEGIN CERTIFICATE-----
+      MIIFpTCCA42gAwIBAgIUI2WnxZcIMNk7eBxeBmOU5dXgk50wDQYJKoZIhvcNAQEL
+      BQAwYjELMAkGA1UEBhMCVVMxCzAJBgNVBAgMAkNBMRQwEgYDVQQHDAtMb3MgQW5n
+      ZWxlczEPMA0GA1UECgwGSm9ibGV0MQswCQYDVQQLDAJDQTESMBAGA1UEAwwJSm9i
+      # Same CA certificate as above
+      # ... (CA certificate content continues) ...
+      -----END CERTIFICATE-----
+
+# Configuration Notes:
+#
+# 1. Replace "your-joblet-server.example.com:50051" with your actual Joblet server address
+#
+# 2. Replace all certificate content with your actual certificates:
+#    - cert: Your client certificate for authentication
+#    - key: Your private key corresponding to the client certificate
+#    - ca: The Certificate Authority certificate that signed the server certificate
+#
+# 3. Certificate Format:
+#    - Use YAML multiline string syntax (|) to embed certificates
+#    - Include the full PEM format including BEGIN/END lines
+#    - Do NOT use file paths - embed the actual certificate content
+#
+# 4. Node Types:
+#    - default: Full admin access for job management, resource creation, etc.
+#    - viewer: Read-only access for monitoring and status checking
+#
+# 5. File Location:
+#    - Place this file at ~/.rnx/rnx-config.yml
+#    - The joblet-sdk-python will automatically discover it there
+#
+# 6. Security:
+#    - Protect this file with appropriate permissions (600)
+#    - Never commit this file to version control
+#    - Use separate certificates for different environments (dev/staging/prod)

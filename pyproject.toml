@@ -1,0 +1,99 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "joblet-mcp-server"
+version = "1.0.0"
+description = "MCP (Model Context Protocol) server for Joblet job orchestration system"
+readme = "README.md"
+license = { text = "MIT" }
+authors = [
+    { name = "Jay Ehsaniara" },
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: System :: Distributed Computing",
+]
+requires-python = ">=3.10"
+dependencies = [
+    "mcp>=1.0.0",
+    "pydantic>=2.0.0",
+    "typing-extensions>=4.8.0",
+    "aiofiles>=23.0.0",
+]
+
+[project.optional-dependencies]
+sdk = [
+    "joblet-sdk @ git+https://github.com/ehsaniara/joblet-sdk-python.git",
+]
+cli = [
+    # CLI implementation uses built-in asyncio.create_subprocess_exec
+]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-asyncio>=0.21.0",
+    "black>=23.0.0",
+    "isort>=5.12.0",
+    "mypy>=1.5.0",
+    "flake8>=6.0.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/ehsaniara/joblet-mcp-server"
+Repository = "https://github.com/ehsaniara/joblet-mcp-server"
+Documentation = "https://github.com/ehsaniara/joblet-mcp-server/blob/main/README.md"
+
+[project.scripts]
+joblet-mcp-server = "joblet_mcp_server.server_sdk:main"
+joblet-mcp-server-cli = "joblet_mcp_server.server:main_sync"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["joblet_mcp_server*"]
+
+[tool.black]
+line-length = 88
+target-version = ['py310']
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+line_length = 88
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
+check_untyped_defs = false
+disallow_untyped_decorators = false
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+strict_equality = true
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+addopts = "-ra -q --strict-markers --strict-config"
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+markers = [
+    "asyncio: marks tests as async",
+    "integration: marks tests as integration tests",
+    "unit: marks tests as unit tests",
+    "e2e: marks tests as end-to-end tests requiring real environment",
+    "slow: marks tests as slow-running tests",
+]
