@@ -162,7 +162,9 @@ class TestIntegration:
         """Test that our tool schemas match what rnx expects"""
         # Skip this test as the MCP API internals are not accessible
         # The important thing is that tools work functionally, not that we can inspect them
-        pytest.skip("MCP Server internal API testing skipped - functional testing is more important")
+        pytest.skip(
+            "MCP Server internal API testing skipped - functional testing is more important"
+        )
 
 
 class TestMockIntegration:
@@ -183,4 +185,6 @@ class TestMockIntegration:
         """Test a complete job lifecycle with mocked responses"""
         # Skip complex mocking tests that are hard to maintain
         # Focus on unit tests and real integration tests instead
-        pytest.skip("Complex mock integration tests skipped - focusing on simpler unit tests")
+        pytest.skip(
+            "Complex mock integration tests skipped - focusing on simpler unit tests"
+        )
