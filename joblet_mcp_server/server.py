@@ -617,7 +617,11 @@ class JobletMCPServer:
             stderr_str = stderr or ""
 
             if process.returncode == 0:
-                return stdout_str.strip() if stdout_str else "Command executed successfully"
+                return (
+                    stdout_str.strip()
+                    if stdout_str
+                    else "Command executed successfully"
+                )
             else:
                 error_msg = (
                     stderr_str.strip()
