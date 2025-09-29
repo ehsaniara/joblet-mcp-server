@@ -15,9 +15,7 @@ from mcp.server import Server
 from mcp.server.models import InitializationOptions
 from mcp.server.stdio import stdio_server
 from mcp.types import (
-    CallToolRequest,
     CallToolResult,
-    ListToolsRequest,
     TextContent,
     Tool,
 )
@@ -287,12 +285,18 @@ class JobletMCPServer:
                     inputSchema={
                         "type": "object",
                         "properties": {
-                            "name": {"type": "string", "description": "Volume name"},
+                            "name": {
+                                "type": "string",
+                                "description": "Volume name",
+                            },
                             "size": {
                                 "type": "string",
                                 "description": "Volume size (e.g., '10GB')",
                             },
-                            "type": {"type": "string", "description": "Volume type"},
+                            "type": {
+                                "type": "string",
+                                "description": "Volume type",
+                            },
                         },
                         "required": ["name", "size"],
                     },
@@ -308,7 +312,10 @@ class JobletMCPServer:
                     inputSchema={
                         "type": "object",
                         "properties": {
-                            "name": {"type": "string", "description": "Volume name"},
+                            "name": {
+                                "type": "string",
+                                "description": "Volume name",
+                            },
                         },
                         "required": ["name"],
                     },
@@ -320,7 +327,10 @@ class JobletMCPServer:
                     inputSchema={
                         "type": "object",
                         "properties": {
-                            "name": {"type": "string", "description": "Network name"},
+                            "name": {
+                                "type": "string",
+                                "description": "Network name",
+                            },
                             "cidr": {
                                 "type": "string",
                                 "description": "CIDR block (e.g., '10.0.1.0/24')",
@@ -340,7 +350,10 @@ class JobletMCPServer:
                     inputSchema={
                         "type": "object",
                         "properties": {
-                            "name": {"type": "string", "description": "Network name"},
+                            "name": {
+                                "type": "string",
+                                "description": "Network name",
+                            },
                         },
                         "required": ["name"],
                     },
@@ -394,7 +407,10 @@ class JobletMCPServer:
                                 "type": "string",
                                 "description": "Git repository URL",
                             },
-                            "branch": {"type": "string", "description": "Git branch"},
+                            "branch": {
+                                "type": "string",
+                                "description": "Git branch",
+                            },
                             "force_reinstall": {
                                 "type": "boolean",
                                 "description": "Force reinstallation",
@@ -550,7 +566,12 @@ class JobletMCPServer:
         elif tool_name == "joblet_get_system_metrics":
             if arguments.get("interval"):
                 cmd.extend(
-                    ["monitor", "watch", "--interval", str(arguments["interval"])]
+                    [
+                        "monitor",
+                        "watch",
+                        "--interval",
+                        str(arguments["interval"]),
+                    ]
                 )
             else:
                 cmd.extend(["monitor", "top"])

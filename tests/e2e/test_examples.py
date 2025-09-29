@@ -65,7 +65,12 @@ class TestExamples:
         print(f"Available runtimes: {available_runtimes}")
 
         # Check for expected runtimes
-        expected = ["python-3.11", "python-3.11-ml", "openjdk-21", "graalvmjdk-21"]
+        expected = [
+            "python-3.11",
+            "python-3.11-ml",
+            "openjdk-21",
+            "graalvmjdk-21",
+        ]
 
         for runtime in expected:
             if runtime in available_runtimes:
@@ -200,7 +205,10 @@ class TestTemplates:
             "joblet_run_job",
             {
                 "command": "python",  # Runtime-specific command
-                "args": ["-c", "print('Hello from Python')"],  # Runtime-specific args
+                "args": [
+                    "-c",
+                    "print('Hello from Python')",
+                ],  # Runtime-specific args
                 "name": f"{runtime_name}-test",
                 "runtime": runtime_name,
                 "max_cpu": 25,

@@ -2,8 +2,7 @@
 Tests for the Joblet MCP Server
 """
 
-import json
-from unittest.mock import AsyncMock, Mock, patch
+from unittest.mock import AsyncMock, patch
 
 import pytest
 
@@ -71,7 +70,10 @@ class TestJobletMCPServer:
         with patch("asyncio.create_subprocess_exec") as mock_subprocess:
             mock_process = AsyncMock()
             mock_process.returncode = 1
-            mock_process.communicate.return_value = ("", "Error: Job not found")
+            mock_process.communicate.return_value = (
+                "",
+                "Error: Job not found",
+            )
             mock_subprocess.return_value = mock_process
 
             with pytest.raises(RuntimeError, match="Error: Job not found"):
@@ -173,7 +175,10 @@ class TestToolMappings:
                 args.update({"name": "test-vol", "size": "1GB"})
             elif tool_name == "joblet_create_network":
                 args.update({"name": "test-net", "cidr": "10.0.1.0/24"})
-            elif tool_name in ["joblet_remove_volume", "joblet_remove_network"]:
+            elif tool_name in [
+                "joblet_remove_volume",
+                "joblet_remove_network",
+            ]:
                 args["name"] = "test-name"
             elif tool_name == "joblet_remove_runtime":
                 args["runtime"] = "test-runtime"

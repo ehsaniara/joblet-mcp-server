@@ -112,13 +112,17 @@ class TestIntegration:
             mock_process = type(
                 "MockProcess",
                 (),
-                {"returncode": 0, "communicate": lambda: asyncio.create_future()},
+                {
+                    "returncode": 0,
+                    "communicate": lambda: asyncio.create_future(),
+                },
             )()
             mock_process.communicate().set_result(('{"success": true}', ""))
             mock_subprocess.return_value = mock_process
 
             await integration_server._execute_tool(
-                "joblet_run_job", {"command": "echo", "args": ["hello"], "max_cpu": 50}
+                "joblet_run_job",
+                {"command": "echo", "args": ["hello"], "max_cpu": 50},
             )
 
             # Check that the command was built correctly
@@ -221,7 +225,10 @@ class TestMockIntegration:
 
             # Set up different responses for different commands
             responses = [
-                ('{"job_uuid": "test-123", "status": "running"}', 0),  # run job
+                (
+                    '{"job_uuid": "test-123", "status": "running"}',
+                    0,
+                ),  # run job
                 (
                     '{"uuid": "test-123", "status": "running", "command": "echo"}',
                     0,

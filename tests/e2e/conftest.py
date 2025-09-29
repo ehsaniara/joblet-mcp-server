@@ -3,11 +3,9 @@ Configuration and fixtures for e2e tests
 """
 
 import asyncio
-import os
 import shutil
 import tempfile
 from pathlib import Path
-from typing import Any, Dict, Optional
 
 import pytest
 
@@ -227,7 +225,8 @@ async def cleanup_networks(e2e_server):
 def pytest_configure(config):
     """Configure pytest with custom markers"""
     config.addinivalue_line(
-        "markers", "e2e: marks tests as end-to-end tests requiring real environment"
+        "markers",
+        "e2e: marks tests as end-to-end tests requiring real environment",
     )
     config.addinivalue_line("markers", "slow: marks tests as slow-running tests")
 

@@ -10,7 +10,6 @@ Tests the actual runtime environments available in Joblet:
 
 import asyncio
 import json
-from typing import Any, Dict
 
 import pytest
 
@@ -210,7 +209,10 @@ print('ML training completed')
                 "runtime": "python-3.11-ml",
                 "max_cpu": 80,
                 "max_memory": 4096,
-                "environment": {"MODEL_TYPE": "RandomForest", "N_ESTIMATORS": "50"},
+                "environment": {
+                    "MODEL_TYPE": "RandomForest",
+                    "N_ESTIMATORS": "50",
+                },
             },
         )
 

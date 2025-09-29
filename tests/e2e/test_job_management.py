@@ -4,7 +4,6 @@ End-to-end tests for job management functionality
 
 import asyncio
 import json
-from typing import Any, Dict
 
 import pytest
 
@@ -131,7 +130,10 @@ class TestBasicJobManagement:
                 "name": temp_job_name,
                 "max_cpu": 25,
                 "max_memory": 512,
-                "environment": {"TEST_VAR": "hello_world", "SECOND_VAR": "e2e_testing"},
+                "environment": {
+                    "TEST_VAR": "hello_world",
+                    "SECOND_VAR": "e2e_testing",
+                },
             },
         )
 
@@ -223,9 +225,7 @@ class TestBasicJobManagement:
         await asyncio.sleep(3)
 
         # Stop the job
-        stop_result = await e2e_server._execute_tool(
-            "joblet_stop_job", {"job_uuid": job_uuid}
-        )
+        await e2e_server._execute_tool("joblet_stop_job", {"job_uuid": job_uuid})
 
         # Wait a moment for the stop to take effect
         await asyncio.sleep(2)
@@ -368,11 +368,8 @@ class TestJobDeletion:
         # Wait for all jobs to complete
         await asyncio.sleep(10)
 
-        # Get initial job count
-        initial_list = await e2e_server._execute_tool("joblet_list_jobs", {})
-        initial_count = len(
-            [line for line in initial_list.strip().split("\n") if line.strip()]
-        )
+        # Get initial job list (for verification if needed)
+        await e2e_server._execute_tool("joblet_list_jobs", {})
 
         # Bulk delete
         delete_result = await e2e_server._execute_tool("joblet_delete_all_jobs", {})

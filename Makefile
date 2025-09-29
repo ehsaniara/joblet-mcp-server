@@ -22,7 +22,8 @@ test-coverage: ## Run tests with coverage
 	$(PYTHON) -m pytest tests/ -v --cov=joblet_mcp_server --cov-report=term-missing
 
 lint: ## Run linting
-	$(PYTHON) -m flake8 joblet_mcp_server/ tests/
+	$(PYTHON) -m flake8 joblet_mcp_server/ --max-line-length=120 --extend-ignore=E203,W503
+	$(PYTHON) -m flake8 tests/ --max-line-length=120 --extend-ignore=E203,W503,E501
 
 format: ## Format code
 	$(PYTHON) -m black joblet_mcp_server/ tests/ examples/

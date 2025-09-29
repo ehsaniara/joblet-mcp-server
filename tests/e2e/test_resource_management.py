@@ -4,7 +4,6 @@ End-to-end tests for resource management functionality
 
 import asyncio
 import json
-from typing import Any, Dict
 
 import pytest
 
@@ -60,9 +59,9 @@ class TestVolumeManagement:
                 "command": "bash",
                 "args": [
                     "-c",
-                    f"echo 'Testing volume' > /data/test.txt && cat /data/test.txt",
+                    "echo 'Testing volume' > /data/test.txt && cat /data/test.txt",
                 ],
-                "name": f"volume-test-job",
+                "name": "volume-test-job",
                 "volumes": [f"{temp_volume_name}:/data"],
                 "max_cpu": 25,
                 "max_memory": 512,
@@ -85,7 +84,7 @@ class TestVolumeManagement:
         # Clean up the job
         try:
             await e2e_server._execute_tool("joblet_delete_job", {"job_uuid": job_uuid})
-        except:
+        except Exception:
             pass
 
         # Remove the volume
@@ -114,7 +113,10 @@ class TestVolumeManagement:
             "joblet_run_job",
             {
                 "command": "bash",
-                "args": ["-c", "echo 'Persistent data from job 1' > /shared/data.txt"],
+                "args": [
+                    "-c",
+                    "echo 'Persistent data from job 1' > /shared/data.txt",
+                ],
                 "name": "persistence-test-1",
                 "volumes": [f"{temp_volume_name}:/shared"],
                 "max_cpu": 25,
@@ -162,7 +164,7 @@ class TestVolumeManagement:
                 await e2e_server._execute_tool(
                     "joblet_delete_job", {"job_uuid": job_uuid}
                 )
-            except:
+            except Exception:
                 pass
 
     async def test_multiple_volumes_in_job(
@@ -190,7 +192,9 @@ class TestVolumeManagement:
                 "command": "bash",
                 "args": [
                     "-c",
-                    "echo 'Volume 1 data' > /vol1/test.txt && echo 'Volume 2 data' > /vol2/test.txt && cat /vol1/test.txt /vol2/test.txt",
+                    "echo 'Volume 1 data' > /vol1/test.txt && "
+                    "echo 'Volume 2 data' > /vol2/test.txt && "
+                    "cat /vol1/test.txt /vol2/test.txt",
                 ],
                 "name": "multi-volume-test",
                 "volumes": [f"{volume1_name}:/vol1", f"{volume2_name}:/vol2"],
@@ -215,7 +219,7 @@ class TestVolumeManagement:
         # Cleanup
         try:
             await e2e_server._execute_tool("joblet_delete_job", {"job_uuid": job_uuid})
-        except:
+        except Exception:
             pass
 
     async def _wait_for_job_completion(self, server, job_uuid, max_wait=30):
@@ -269,7 +273,10 @@ class TestNetworkManagement:
             "joblet_run_job",
             {
                 "command": "bash",
-                "args": ["-c", "ip addr show && echo 'Network test completed'"],
+                "args": [
+                    "-c",
+                    "ip addr show && echo 'Network test completed'",
+                ],
                 "name": "network-test-job",
                 "network": temp_network_name,
                 "max_cpu": 25,
@@ -293,7 +300,7 @@ class TestNetworkManagement:
         # Cleanup job
         try:
             await e2e_server._execute_tool("joblet_delete_job", {"job_uuid": job_uuid})
-        except:
+        except Exception:
             pass
 
         # Remove the network
@@ -310,12 +317,14 @@ class TestNetworkManagement:
 
         # Create two different networks
         await e2e_server._execute_tool(
-            "joblet_create_network", {"name": network1_name, "cidr": "10.101.0.0/24"}
+            "joblet_create_network",
+            {"name": network1_name, "cidr": "10.101.0.0/24"},
         )
         cleanup_networks(network1_name)
 
         await e2e_server._execute_tool(
-            "joblet_create_network", {"name": network2_name, "cidr": "10.102.0.0/24"}
+            "joblet_create_network",
+            {"name": network2_name, "cidr": "10.102.0.0/24"},
         )
         cleanup_networks(network2_name)
 
@@ -373,7 +382,7 @@ class TestNetworkManagement:
                 await e2e_server._execute_tool(
                     "joblet_delete_job", {"job_uuid": job_uuid}
                 )
-            except:
+            except Exception:
                 pass
 
     async def _wait_for_job_completion(self, server, job_uuid, max_wait=30):
