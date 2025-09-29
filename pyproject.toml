@@ -32,7 +32,7 @@ dependencies = [
 
 [project.optional-dependencies]
 sdk = [
-    "joblet-sdk @ git+https://github.com/ehsaniara/joblet-sdk-python.git",
+    "joblet-sdk>=1.0.3",
 ]
 cli = [
     # CLI implementation uses built-in asyncio.create_subprocess_exec
