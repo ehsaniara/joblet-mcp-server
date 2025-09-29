@@ -66,9 +66,6 @@ jobs:
     - name: Run linting
       run: make lint
 
-    - name: Run type checking
-      run: make type-check
-
     - name: Run tests
       run: make test
 

@@ -612,13 +612,16 @@ class JobletMCPServer:
             )
 
             stdout, stderr = await process.communicate()
+            # When text=True, stdout and stderr are str | None
+            stdout_str = stdout or ""
+            stderr_str = stderr or ""
 
             if process.returncode == 0:
-                return stdout.strip() if stdout else "Command executed successfully"
+                return stdout_str.strip() if stdout_str else "Command executed successfully"
             else:
                 error_msg = (
-                    stderr.strip()
-                    if stderr
+                    stderr_str.strip()
+                    if stderr_str
                     else f"Command failed with exit code {process.returncode}"
                 )
                 raise RuntimeError(error_msg)

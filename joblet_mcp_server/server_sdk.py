@@ -24,8 +24,8 @@ from pydantic import BaseModel
 
 # Try to import joblet SDK, fall back gracefully if not available
 try:
-    from joblet import JobletClient
-    from joblet.services import (
+    from joblet import JobletClient  # type: ignore[import-untyped]
+    from joblet.services import (  # type: ignore[import-untyped]
         JobService,
         MonitoringService,
         NetworkService,

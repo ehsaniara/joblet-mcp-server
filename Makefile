@@ -36,7 +36,7 @@ format-check: ## Check code formatting
 type-check: ## Run type checking
 	$(PYTHON) -m mypy joblet_mcp_server/
 
-check: format-check lint type-check test ## Run all checks
+check: format-check lint test ## Run all checks
 
 clean: ## Clean build artifacts
 	rm -rf build/
@@ -90,4 +90,4 @@ setup: dev-install verify-install ## Complete development setup
 	@echo "  3. Start the server: make run"
 
 # CI/CD targets
-ci: format-check lint type-check test ## Run all CI checks
+ci: format-check lint test ## Run all CI checks

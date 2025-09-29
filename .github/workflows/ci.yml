@@ -37,12 +37,8 @@ jobs:
         # Test that SDK import handling works (should not crash)
         python -c "from joblet_mcp_server.server_sdk import JobletMCPServerSDK; print('✓ SDK server import works')"
 
-    # Code quality checks temporarily simplified for CI stability
-
     - name: Run tests
       run: python -m pytest tests/test_server.py -v
-
-    # Coverage upload disabled for simplified testing
 
   security:
     runs-on: ubuntu-latest
