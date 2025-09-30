@@ -16,16 +16,13 @@ from mcp.server import Server
 from mcp.server.lowlevel import NotificationOptions
 from mcp.server.models import InitializationOptions
 from mcp.server.stdio import stdio_server
-from mcp.types import (
-    TextContent,
-    Tool,
-)
+from mcp.types import TextContent, Tool
 from pydantic import BaseModel
 
 # Try to import joblet SDK, fall back gracefully if not available
 try:
-    from joblet import JobletClient  # type: ignore[import-untyped]
-    from joblet.services import (  # type: ignore[import-untyped]
+    from joblet import JobletClient
+    from joblet.services import (
         JobService,
         MonitoringService,
         NetworkService,
@@ -170,7 +167,10 @@ class JobletMCPServerSDK:
                                         },
                                         "content": {
                                             "type": "string",
-                                            "description": "File content (base64 encoded for binary)",
+                                            "description": (
+                                                "File content "
+                                                "(base64 encoded for binary)"
+                                            ),
                                         },
                                         "mode": {
                                             "type": "integer",
@@ -786,7 +786,10 @@ class JobletMCPServerSDK:
                 else:
                     # For local installation, we'd need file data
                     result = {
-                        "error": "Local runtime installation requires file data - use joblet_install_runtime_from_local"
+                        "error": (
+                            "Local runtime installation requires file data - "
+                            "use joblet_install_runtime_from_local"
+                        )
                     }
                 return str(result)
 

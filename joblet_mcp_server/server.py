@@ -14,11 +14,7 @@ from typing import Any, Dict, List, Optional
 from mcp.server import Server
 from mcp.server.models import InitializationOptions
 from mcp.server.stdio import stdio_server
-from mcp.types import (
-    CallToolResult,
-    TextContent,
-    Tool,
-)
+from mcp.types import CallToolResult, TextContent, Tool
 from pydantic import BaseModel
 
 # Try to import SDK-based server first
@@ -608,13 +604,12 @@ class JobletMCPServer:
                 *cmd,
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE,
-                text=True,
             )
 
             stdout, stderr = await process.communicate()
-            # When text=True, stdout and stderr are str | None
-            stdout_str = stdout or ""
-            stderr_str = stderr or ""
+            # Decode bytes to string
+            stdout_str = stdout.decode() if stdout else ""
+            stderr_str = stderr.decode() if stderr else ""
 
             if process.returncode == 0:
                 return (
