@@ -14,13 +14,7 @@ from typing import Any, Dict, List, Optional
 from mcp.server import Server
 from mcp.server.models import InitializationOptions
 from mcp.server.stdio import stdio_server
-from mcp.types import (
-    CallToolRequest,
-    CallToolResult,
-    ListToolsRequest,
-    TextContent,
-    Tool,
-)
+from mcp.types import CallToolResult, TextContent, Tool
 from pydantic import BaseModel
 
 # Try to import SDK-based server first
@@ -287,12 +281,18 @@ class JobletMCPServer:
                     inputSchema={
                         "type": "object",
                         "properties": {
-                            "name": {"type": "string", "description": "Volume name"},
+                            "name": {
+                                "type": "string",
+                                "description": "Volume name",
+                            },
                             "size": {
                                 "type": "string",
                                 "description": "Volume size (e.g., '10GB')",
                             },
-                            "type": {"type": "string", "description": "Volume type"},
+                            "type": {
+                                "type": "string",
+                                "description": "Volume type",
+                            },
                         },
                         "required": ["name", "size"],
                     },
@@ -308,7 +308,10 @@ class JobletMCPServer:
                     inputSchema={
                         "type": "object",
                         "properties": {
-                            "name": {"type": "string", "description": "Volume name"},
+                            "name": {
+                                "type": "string",
+                                "description": "Volume name",
+                            },
                         },
                         "required": ["name"],
                     },
@@ -320,7 +323,10 @@ class JobletMCPServer:
                     inputSchema={
                         "type": "object",
                         "properties": {
-                            "name": {"type": "string", "description": "Network name"},
+                            "name": {
+                                "type": "string",
+                                "description": "Network name",
+                            },
                             "cidr": {
                                 "type": "string",
                                 "description": "CIDR block (e.g., '10.0.1.0/24')",
@@ -340,7 +346,10 @@ class JobletMCPServer:
                     inputSchema={
                         "type": "object",
                         "properties": {
-                            "name": {"type": "string", "description": "Network name"},
+                            "name": {
+                                "type": "string",
+                                "description": "Network name",
+                            },
                         },
                         "required": ["name"],
                     },
@@ -394,7 +403,10 @@ class JobletMCPServer:
                                 "type": "string",
                                 "description": "Git repository URL",
                             },
-                            "branch": {"type": "string", "description": "Git branch"},
+                            "branch": {
+                                "type": "string",
+                                "description": "Git branch",
+                            },
                             "force_reinstall": {
                                 "type": "boolean",
                                 "description": "Force reinstallation",
@@ -550,7 +562,12 @@ class JobletMCPServer:
         elif tool_name == "joblet_get_system_metrics":
             if arguments.get("interval"):
                 cmd.extend(
-                    ["monitor", "watch", "--interval", str(arguments["interval"])]
+                    [
+                        "monitor",
+                        "watch",
+                        "--interval",
+                        str(arguments["interval"]),
+                    ]
                 )
             else:
                 cmd.extend(["monitor", "top"])
@@ -587,17 +604,23 @@ class JobletMCPServer:
                 *cmd,
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE,
-                text=True,
             )
 
             stdout, stderr = await process.communicate()
+            # Decode bytes to string
+            stdout_str = stdout.decode() if stdout else ""
+            stderr_str = stderr.decode() if stderr else ""
 
             if process.returncode == 0:
-                return stdout.strip() if stdout else "Command executed successfully"
+                return (
+                    stdout_str.strip()
+                    if stdout_str
+                    else "Command executed successfully"
+                )
             else:
                 error_msg = (
-                    stderr.strip()
-                    if stderr
+                    stderr_str.strip()
+                    if stderr_str
                     else f"Command failed with exit code {process.returncode}"
                 )
                 raise RuntimeError(error_msg)

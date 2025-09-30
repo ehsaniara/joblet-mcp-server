@@ -9,7 +9,6 @@ and resource management capabilities using joblet-sdk-python directly.
 import argparse
 import asyncio
 import logging
-import os
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -17,13 +16,7 @@ from mcp.server import Server
 from mcp.server.lowlevel import NotificationOptions
 from mcp.server.models import InitializationOptions
 from mcp.server.stdio import stdio_server
-from mcp.types import (
-    CallToolRequest,
-    CallToolResult,
-    ListToolsRequest,
-    TextContent,
-    Tool,
-)
+from mcp.types import TextContent, Tool
 from pydantic import BaseModel
 
 # Try to import joblet SDK, fall back gracefully if not available
@@ -174,7 +167,10 @@ class JobletMCPServerSDK:
                                         },
                                         "content": {
                                             "type": "string",
-                                            "description": "File content (base64 encoded for binary)",
+                                            "description": (
+                                                "File content "
+                                                "(base64 encoded for binary)"
+                                            ),
                                         },
                                         "mode": {
                                             "type": "integer",
@@ -375,12 +371,18 @@ class JobletMCPServerSDK:
                     inputSchema={
                         "type": "object",
                         "properties": {
-                            "name": {"type": "string", "description": "Volume name"},
+                            "name": {
+                                "type": "string",
+                                "description": "Volume name",
+                            },
                             "size": {
                                 "type": "string",
                                 "description": "Volume size (e.g., '10GB', '500MB')",
                             },
-                            "type": {"type": "string", "description": "Volume type"},
+                            "type": {
+                                "type": "string",
+                                "description": "Volume type",
+                            },
                         },
                         "required": ["name", "size"],
                     },
@@ -399,7 +401,10 @@ class JobletMCPServerSDK:
                     inputSchema={
                         "type": "object",
                         "properties": {
-                            "name": {"type": "string", "description": "Volume name"},
+                            "name": {
+                                "type": "string",
+                                "description": "Volume name",
+                            },
                         },
                         "required": ["name"],
                     },
@@ -410,7 +415,10 @@ class JobletMCPServerSDK:
                     inputSchema={
                         "type": "object",
                         "properties": {
-                            "name": {"type": "string", "description": "Network name"},
+                            "name": {
+                                "type": "string",
+                                "description": "Network name",
+                            },
                             "cidr": {
                                 "type": "string",
                                 "description": "CIDR notation for network (e.g., '10.0.1.0/24')",
@@ -433,7 +441,10 @@ class JobletMCPServerSDK:
                     inputSchema={
                         "type": "object",
                         "properties": {
-                            "name": {"type": "string", "description": "Network name"},
+                            "name": {
+                                "type": "string",
+                                "description": "Network name",
+                            },
                         },
                         "required": ["name"],
                     },
@@ -634,7 +645,8 @@ class JobletMCPServerSDK:
 
             elif tool_name == "joblet_list_jobs":
                 jobs = client.jobs.list_jobs(
-                    status=arguments.get("status"), limit=arguments.get("limit")
+                    status=arguments.get("status"),
+                    limit=arguments.get("limit"),
                 )
                 return str(jobs)
 
@@ -720,7 +732,8 @@ class JobletMCPServerSDK:
             elif tool_name == "joblet_get_system_metrics":
                 # Use stream_system_metrics to get one sample
                 metrics_stream = client.monitoring.stream_system_metrics(
-                    interval_seconds=1, metric_types=arguments.get("metric_types", [])
+                    interval_seconds=1,
+                    metric_types=arguments.get("metric_types", []),
                 )
                 # Get the first metrics sample
                 for metrics in metrics_stream:
@@ -773,7 +786,10 @@ class JobletMCPServerSDK:
                 else:
                     # For local installation, we'd need file data
                     result = {
-                        "error": "Local runtime installation requires file data - use joblet_install_runtime_from_local"
+                        "error": (
+                            "Local runtime installation requires file data - "
+                            "use joblet_install_runtime_from_local"
+                        )
                     }
                 return str(result)
 
