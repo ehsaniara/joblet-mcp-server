@@ -6,7 +6,7 @@ job orchestration and resource management capabilities.
 """
 
 __version__ = "1.0.0"
-__author__ = "Joblet Team"
+__author__ = "Jay Ehsaniara"
 __description__ = "MCP server for Joblet job orchestration system"
 
 from .server import JobletMCPServer

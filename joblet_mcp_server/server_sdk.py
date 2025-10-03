@@ -598,6 +598,14 @@ class JobletMCPServerSDK:
                 logger.error(f"Tool execution failed: {e}")
                 raise RuntimeError(f"Tool execution failed: {str(e)}")
 
+    async def _get_session(self):
+        """Get the current request session for sending notifications"""
+        try:
+            request_context = self.server.request_context()
+            return request_context.session
+        except (LookupError, AttributeError):
+            return None
+
     async def _execute_tool(self, tool_name: str, arguments: Dict[str, Any]) -> str:
         """Execute a Joblet tool using the SDK"""
         client = await self._get_client()
@@ -658,19 +666,69 @@ class JobletMCPServerSDK:
                 # get_job_logs returns an iterator of log chunks
                 logs_iterator = client.jobs.get_job_logs(arguments["job_uuid"])
                 log_chunks = []
-                try:
-                    # Collect log chunks (limiting to avoid memory issues)
-                    max_chunks = arguments.get(
-                        "lines", 100
-                    )  # Limit to avoid memory issues
-                    chunk_count = 0
-                    for chunk in logs_iterator:
-                        if chunk_count >= max_chunks:
-                            break
-                        log_chunks.append(chunk.decode("utf-8", errors="replace"))
-                        chunk_count += 1
 
-                    return "\n".join(log_chunks) if log_chunks else "No logs available"
+                # Check if streaming/follow mode is requested
+                follow = arguments.get("follow", False)
+
+                try:
+                    if follow:
+                        # Stream logs using MCP notifications
+                        session = await self._get_session()
+                        chunk_count = 0
+
+                        # Get progress token from request context if available
+                        progress_token = None
+                        try:
+                            request_context = self.server.request_context()
+                            if request_context.meta:
+                                progress_token = request_context.meta.progressToken
+                        except (LookupError, AttributeError):
+                            pass
+
+                        for chunk in logs_iterator:
+                            chunk_text = chunk.decode("utf-8", errors="replace")
+                            log_chunks.append(chunk_text)
+                            chunk_count += 1
+
+                            # Send notifications if session is available
+                            if session:
+                                try:
+                                    # Send log chunk as logging notification
+                                    await session.send_log_message(
+                                        level="info",
+                                        logger="joblet_logs",
+                                        data=chunk_text,
+                                    )
+
+                                    # Send progress update if token provided
+                                    if progress_token:
+                                        await session.send_progress_notification(
+                                            progress_token=progress_token,
+                                            progress=chunk_count,
+                                            total=None,  # Unknown total for streaming logs
+                                            message=f"Received {chunk_count} log chunks",
+                                        )
+                                except Exception as notif_err:
+                                    logger.warning(
+                                        f"Failed to send notification: {notif_err}"
+                                    )
+
+                        return (
+                            "\n".join(log_chunks) if log_chunks else "No logs available"
+                        )
+                    else:
+                        # Non-streaming mode: collect limited chunks
+                        max_chunks = arguments.get("lines", 100)
+                        chunk_count = 0
+                        for chunk in logs_iterator:
+                            if chunk_count >= max_chunks:
+                                break
+                            log_chunks.append(chunk.decode("utf-8", errors="replace"))
+                            chunk_count += 1
+
+                        return (
+                            "\n".join(log_chunks) if log_chunks else "No logs available"
+                        )
                 except Exception as e:
                     return f"Error retrieving logs: {str(e)}"
 
