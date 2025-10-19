@@ -1,8 +1,12 @@
 # Sample Joblet MCP Server Configuration
 # Place this file at ~/.rnx/rnx-config.yml
 #
-# This configuration format matches what joblet-sdk-python expects
-# and uses embedded TLS certificates as strings (not file paths)
+# This configuration works with both SDK and CLI modes:
+# - SDK mode (joblet-mcp-server): Uses joblet-sdk-python for direct gRPC communication
+# - CLI mode (joblet-mcp-server-cli): Uses rnx CLI binary via subprocess calls
+#
+# Configuration uses embedded TLS certificates as strings (not file paths)
+# Compatible with joblet-sdk-python >= 2.0.0 (proto v2.3.0+)
 
 version: "3.0"
 
@@ -81,9 +85,16 @@ nodes:
 #
 # 5. File Location:
 #    - Place this file at ~/.rnx/rnx-config.yml
-#    - The joblet-sdk-python will automatically discover it there
+#    - Both SDK and CLI modes will automatically discover it there
+#    - SDK mode: joblet-sdk-python reads this configuration directly
+#    - CLI mode: rnx binary reads this configuration
 #
-# 6. Security:
+# 6. Server Communication:
+#    - SDK mode: Direct gRPC communication via joblet-sdk-python (proto v2.3.0+)
+#    - CLI mode: Subprocess calls to rnx binary
+#    - Both connect to port 50051 (unified JobService endpoint)
+#
+# 7. Security:
 #    - Protect this file with appropriate permissions (600)
 #    - Never commit this file to version control
 #    - Use separate certificates for different environments (dev/staging/prod)

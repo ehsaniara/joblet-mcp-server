@@ -242,6 +242,27 @@ class JobletMCPServerSDK:
                     },
                 ),
                 Tool(
+                    name="joblet_get_job_metrics",
+                    description=(
+                        "Stream resource usage metrics for a job "
+                        "(CPU, memory, I/O, network, GPU)"
+                    ),
+                    inputSchema={
+                        "type": "object",
+                        "properties": {
+                            "job_uuid": {
+                                "type": "string",
+                                "description": "Job UUID (supports short form)",
+                            },
+                            "limit": {
+                                "type": "integer",
+                                "description": "Maximum number of metric samples to return",
+                            },
+                        },
+                        "required": ["job_uuid"],
+                    },
+                ),
+                Tool(
                     name="joblet_stop_job",
                     description="Stop a currently running job",
                     inputSchema={
@@ -731,6 +752,67 @@ class JobletMCPServerSDK:
                         )
                 except Exception as e:
                     return f"Error retrieving logs: {str(e)}"
+
+            elif tool_name == "joblet_get_job_metrics":
+                # get_job_metrics returns an iterator of metric samples
+                metrics_iterator = client.jobs.get_job_metrics(arguments["job_uuid"])
+                metrics = []
+
+                try:
+                    limit = arguments.get("limit")
+                    count = 0
+
+                    for metric in metrics_iterator:
+                        metrics.append(metric)
+                        count += 1
+                        if limit and count >= limit:
+                            break
+
+                    if not metrics:
+                        return "No metrics available for this job"
+
+                    # Format metrics as readable output
+                    result = [f"Retrieved {len(metrics)} metric samples:\n"]
+
+                    # Show first few samples
+                    samples_to_show = min(5, len(metrics))
+                    for i, m in enumerate(metrics[:samples_to_show]):
+                        cpu = m.get("cpu_usage", 0)
+                        memory = m.get("memory_usage", 0) / (1024 * 1024)  # MB
+                        result.append(
+                            f"  [{i+1}] CPU: {cpu:.2f}%, Memory: {memory:.2f} MB"
+                        )
+
+                    if len(metrics) > samples_to_show:
+                        more_count = len(metrics) - samples_to_show
+                        result.append(f"\n  ... and {more_count} more samples")
+
+                    # Summary statistics
+                    if metrics:
+                        cpu_values = [m.get("cpu_usage", 0) for m in metrics]
+                        memory_values = [
+                            m.get("memory_usage", 0) / (1024 * 1024) for m in metrics
+                        ]
+
+                        result.append("\nSummary:")
+                        if cpu_values:
+                            avg_cpu = sum(cpu_values) / len(cpu_values)
+                            max_cpu = max(cpu_values)
+                            result.append(
+                                f"  CPU: avg={avg_cpu:.2f}%, max={max_cpu:.2f}%"
+                            )
+                        if memory_values:
+                            avg_mem = sum(memory_values) / len(memory_values)
+                            max_mem = max(memory_values)
+                            result.append(
+                                f"  Memory: avg={avg_mem:.2f} MB, "
+                                f"max={max_mem:.2f} MB"
+                            )
+
+                    return "\n".join(result)
+
+                except Exception as e:
+                    return f"Error retrieving metrics: {str(e)}"
 
             elif tool_name == "joblet_stop_job":
                 # job_service = JobService(client)

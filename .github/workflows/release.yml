@@ -86,11 +86,11 @@ jobs:
         echo "Updated package version: $PACKAGE_VERSION"
 
         if [ "$PACKAGE_VERSION" != "$TAG_VERSION" ]; then
-          echo "❌ Version update failed"
+          echo "ERROR: Version update failed"
           exit 1
         fi
 
-        echo "✅ Version automatically updated to match tag"
+        echo "SUCCESS: Version automatically updated to match tag"
 
     - name: Build package
       id: build

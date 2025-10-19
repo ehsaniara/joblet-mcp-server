@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "joblet-mcp-server"
-version = "1.0.7"
+version = "1.0.8"
 description = "MCP (Model Context Protocol) server for Joblet job orchestration system"
 readme = "README.md"
 license = { text = "MIT" }
@@ -32,7 +32,7 @@ dependencies = [
 
 [project.optional-dependencies]
 sdk = [
-    "joblet-sdk-python>=1.1.4",
+    "joblet-sdk-python>=2.1.1",
 ]
 cli = [
     # CLI implementation uses built-in asyncio.create_subprocess_exec
